@@ -3,14 +3,14 @@
 ## What I Did
 
 <!-- Briefly describe what you implemented or improved. What did you prioritize and why? -->
-### Used Claude Code to review the code and give me an overview of the architecture
+### Used Claude Code to review the code and give me an overview of the Architecture
     - I need to have a memory of the code and its problems sated in the claude.md
 ### Priorities the issues:
 - Functionality
 - Persistence
 - Persistence feedback
 - Error handel
-- Performance 
+- Architecture
 - Design
 
 ### Functionality
@@ -36,6 +36,18 @@
 - The redirect route (`s.$code.tsx`) now redirects to `/not-found` when a short code is not found in the database, routing through the splat route rather than throwing into the error boundary system.
 - The root `ErrorBoundary` in `root.tsx` remains as a safety net for unexpected server errors and unhandled exceptions.
 
+### Architecture
+The original code had no separation of concerns — all logic lived in two route files with a module-level Map as storage. The refactor introduced clear layers:
+
+**Domain layer (`libs/engine`)** — pure TypeScript, zero runtime dependencies. Owns the `UrlRepository` interface, the `ShortenedUrl` type, and `generateShortCode()`. Nothing here knows about React, Prisma, or HTTP.
+
+**Infrastructure layer (`applications/web/app/repositories`)** — `PrismaUrlRepository` implements `UrlRepository` using Prisma. Keeps database concerns out of the domain and out of the route files.
+
+**Route layer (`applications/web/app/routes`)** — thin HTTP handlers. `loader` fetches data, `action` writes data, both delegate immediately to the repository. No business logic lives here.
+
+**Component layer (`applications/web/app/components`)** — reusable UI pieces (`ShortenForm`, `ShortenResult`, `UrlList`, `ErrorPage`) that receive only the props they need. No framework knowledge, no data fetching.
+
+**Removed dead code** — the original `shortenedUrls` Map export was still present in `libs/engine` after the persistence refactor. It was the root cause of the original bug and was deleted once confirmed unused.
 
 ## What I Would Do With More Time
 
