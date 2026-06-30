@@ -9,7 +9,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   const url = await repo.findByCode(code);
 
   if (!url) {
-    throw new Response("Not Found", { status: 404 });
+    return redirect("/not-found");
   }
 
   return redirect(url);
