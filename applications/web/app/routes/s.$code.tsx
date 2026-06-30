@@ -1,11 +1,12 @@
 import { redirect } from "react-router";
 import type { Route } from "./+types/s.$code";
-import { shortenedUrls } from "@url-shortener/engine";
+import { PrismaUrlRepository } from "~/repositories/prisma-url-repository";
 
-export function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params }: Route.LoaderArgs) {
   const { code } = params;
 
-  const url = shortenedUrls.get(code);
+  const repo = new PrismaUrlRepository();
+  const url = await repo.findByCode(code);
 
   if (!url) {
     throw new Response("Not Found", { status: 404 });

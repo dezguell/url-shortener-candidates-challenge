@@ -1,10 +1,7 @@
 import { Form, useActionData } from "react-router";
 import type { Route } from "./+types/_index";
-import {
-  baseUrl,
-  shortenedUrls,
-  generateShortCode,
-} from "@url-shortener/engine";
+import { baseUrl, generateShortCode } from "@url-shortener/engine";
+import { PrismaUrlRepository } from "~/repositories/prisma-url-repository";
 
 export function loader() {
   return {
@@ -21,8 +18,8 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   const shortCode = generateShortCode();
-
-  shortenedUrls.set(shortCode, url);
+  const repo = new PrismaUrlRepository();
+  await repo.save(shortCode, url);
 
   return {
     shortenedUrl: `${baseUrl}/s/${shortCode}`,
