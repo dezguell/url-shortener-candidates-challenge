@@ -42,10 +42,12 @@ export default function Index({ loaderData }: Route.ComponentProps) {
   const actionData = useActionData<typeof action>();
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-lime-400 via-pink-500 to-cyan-300">
-      <ShortenForm baseUrl={baseUrl} error={actionData?.error} />
-      <ShortenResult shortenedUrl={actionData?.shortenedUrl} />
-      <UrlList urls={urls} />
+    <main className="min-h-screen bg-[--background] flex flex-col items-center justify-center px-4 py-16">
+      <div className="w-full max-w-lg flex flex-col gap-0">
+        <ShortenForm baseUrl={baseUrl} error={actionData?.error} />
+        <ShortenResult shortenedUrl={actionData?.shortenedUrl} />
+        <UrlList urls={urls} />
+      </div>
     </main>
   );
 }

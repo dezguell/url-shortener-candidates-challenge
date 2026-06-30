@@ -1,4 +1,8 @@
 import { Form } from "react-router";
+import { Link2 } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "~/components/ui/card";
 
 interface ShortenFormProps {
   baseUrl: string;
@@ -7,38 +11,42 @@ interface ShortenFormProps {
 
 export function ShortenForm({ baseUrl, error }: ShortenFormProps) {
   return (
-    <div className="bg-yellow-300 p-12 rounded-none border-8 border-dashed border-purple-600 w-full max-w-lg rotate-1 shadow-2xl shadow-red-500">
-      <h1 className="text-4xl font-mono italic text-center mb-8 text-fuchsia-600 underline decoration-wavy decoration-green-500 tracking-widest">
-        ~*~ URL Shortener ~*~
-      </h1>
+    <Card className="w-full max-w-lg">
+      <CardHeader className="text-center">
+        <div className="flex justify-center mb-2">
+          <div className="p-2 rounded-lg bg-[--secondary]">
+            <Link2 className="h-6 w-6 text-[--foreground]" />
+          </div>
+        </div>
+        <CardTitle className="text-2xl">URL Shortener</CardTitle>
+        <CardDescription>Paste a long URL to create a short link</CardDescription>
+      </CardHeader>
 
-      <Form method="post" className="flex flex-col gap-6">
-        <input
-          type="text"
-          name="url"
-          placeholder="Enter your URL here..."
-          required
-          className="w-full px-4 py-3 text-base bg-orange-200 border-4 border-blue-600 text-purple-800 placeholder-red-400 rounded focus:outline-none"
-        />
+      <CardContent>
+        <Form method="post" className="flex flex-col gap-4">
+          <div className="flex gap-2">
+            <Input
+              type="url"
+              name="url"
+              placeholder="https://example.com/very/long/url"
+              required
+              className="flex-1"
+            />
+            <Button type="submit">Shorten</Button>
+          </div>
 
-        <div>
-          <button
-            type="submit"
-            className="w-full px-4 py-3 text-base bg-red-500 hover:bg-lime-500 text-yellow-200 border-4 border-teal-400 rounded-full skew-x-3 cursor-pointer"
-          >
-            ★ SHORTEN IT ★
-          </button>
-          <p className="text-sm text-indigo-800 mt-3 text-center font-bold bg-cyan-200 p-2 border-2 border-dotted border-orange-500">
-            Your shortened URL will start with {baseUrl}
+          <p className="text-xs text-[--muted-foreground]">
+            Short links will start with{" "}
+            <span className="font-mono font-medium text-[--foreground]">{baseUrl}</span>
           </p>
-        </div>
-      </Form>
+        </Form>
 
-      {error && (
-        <div className="mt-8 p-4 bg-lime-500 rounded-none border-8 border-solid border-red-700">
-          <p className="text-2xl text-blue-800 font-black">{error}</p>
-        </div>
-      )}
-    </div>
+        {error && (
+          <div className="mt-4 rounded-md bg-[--destructive]/10 border border-[--destructive]/20 px-4 py-3">
+            <p className="text-sm text-[--destructive]">{error}</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
