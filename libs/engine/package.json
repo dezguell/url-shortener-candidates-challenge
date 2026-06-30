@@ -8,6 +8,8 @@
     "build": "tsc",
     "clean": "rm -rf dist tsconfig.tsbuildinfo .turbo",
     "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "exports": {
@@ -15,6 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.19.7",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.9"
   }
 }

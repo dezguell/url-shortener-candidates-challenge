@@ -5,6 +5,11 @@
 <!-- Briefly describe what you implemented or improved. What did you prioritize and why? -->
 - Used Claude Code to review the code and give me an overview of the architecture
     - I need to have a memory of the code and its problems sated in the claude.md
+- Priorities the issues:
+    - Functionality
+    - Persistence
+    - Design
+    - Performance 
 
 ## What I Would Do With More Time
 
