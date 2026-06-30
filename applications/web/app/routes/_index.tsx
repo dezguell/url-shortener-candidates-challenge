@@ -23,11 +23,17 @@ export async function action({ request }: Route.ActionArgs) {
     return { error: "URL is required" };
   }
 
-  const shortCode = generateShortCode();
   const repo = new PrismaUrlRepository();
+
+  const existing = await repo.findByUrl(url);
+  if (existing) {
+    return { shortenedUrl: `${baseUrl}/s/${existing.code}`, isDuplicate: true };
+  }
+
+  const shortCode = generateShortCode();
   await repo.save(shortCode, url);
 
-  return { shortenedUrl: `${baseUrl}/s/${shortCode}` };
+  return { shortenedUrl: `${baseUrl}/s/${shortCode}`, isDuplicate: false };
 }
 
 export function meta({}: Route.MetaArgs) {
@@ -45,7 +51,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
     <main className="min-h-screen bg-[--background] flex flex-col items-center justify-center px-4 py-16">
       <div className="w-full max-w-lg flex flex-col gap-0">
         <ShortenForm baseUrl={baseUrl} error={actionData?.error} />
-        <ShortenResult shortenedUrl={actionData?.shortenedUrl} />
+        <ShortenResult shortenedUrl={actionData?.shortenedUrl} isDuplicate={actionData?.isDuplicate} />
         <UrlList urls={urls} />
       </div>
     </main>

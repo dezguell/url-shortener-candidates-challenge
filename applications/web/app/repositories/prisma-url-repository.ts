@@ -14,6 +14,13 @@ export class PrismaUrlRepository implements UrlRepository {
     return record?.url ?? null;
   }
 
+  async findByUrl(url: string): Promise<ShortenedUrl | null> {
+    return db.shortenedUrl.findFirst({
+      where: { url },
+      select: { code: true, url: true, createdAt: true },
+    });
+  }
+
   async findAll(): Promise<ShortenedUrl[]> {
     return db.shortenedUrl.findMany({
       select: { code: true, url: true, createdAt: true },
