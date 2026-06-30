@@ -1,4 +1,4 @@
-import type { UrlRepository } from "@url-shortener/engine";
+import type { ShortenedUrl, UrlRepository } from "@url-shortener/engine";
 import { db } from "~/db.server";
 
 export class PrismaUrlRepository implements UrlRepository {
@@ -12,5 +12,12 @@ export class PrismaUrlRepository implements UrlRepository {
       select: { url: true },
     });
     return record?.url ?? null;
+  }
+
+  async findAll(): Promise<ShortenedUrl[]> {
+    return db.shortenedUrl.findMany({
+      select: { code: true, url: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    });
   }
 }
