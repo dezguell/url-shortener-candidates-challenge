@@ -30,6 +30,13 @@
 - A "Stored URLs" panel renders below the form, listing each short code as a clickable link alongside the original URL and timestamp. The panel is hidden when no URLs exist yet.
 - This makes persistence immediately visible: shorten a URL, restart the dev server, and the entry reappears in the list — confirming data survived the restart.
 
+### Error Handling
+- Created a reusable `ErrorPage` component (`app/components/error-page.tsx`) that renders a consistent error UI (status code, title, description, optional dev stack trace, back-to-home link). Works both from error boundaries and from regular route components.
+- Added a splat route (`route("*", "routes/not-found.tsx")`) that catches any navigation to an unregistered path and renders `ErrorPage` with a 404 state.
+- The redirect route (`s.$code.tsx`) now redirects to `/not-found` when a short code is not found in the database, routing through the splat route rather than throwing into the error boundary system.
+- The root `ErrorBoundary` in `root.tsx` remains as a safety net for unexpected server errors and unhandled exceptions.
+
+
 ## What I Would Do With More Time
 
 <!-- What would you tackle next if you had more time? -->
