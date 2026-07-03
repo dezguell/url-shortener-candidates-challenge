@@ -11,6 +11,8 @@ I worked through the codebase systematically, prioritizing issues by impact:
 4. **Error Handling** — built a proper 404 flow with a reusable error component and catch-all route
 5. **Architecture** — separated concerns into domain, infrastructure, route, and component layers
 6. **Design** — replaced the intentionally chaotic UI with a clean shadcn/ui-bsaed interface
+7. **Robustness** — closed the two gaps a reviewer would hit first: unvalidated input and silent code collisions. Also fixed Docker, which didn't actually run.
+8. **Polish** — loading states on the form, plus a theming bug that was silently breaking every themed color in the app
 
 ### Functionality
 - Added unit tests for `generateShortCode()` before refactoring (length, character set, uniqueness rate).
@@ -33,7 +35,7 @@ I worked through the codebase systematically, prioritizing issues by impact:
 - Created a reusable `ErrorPage` component (`app/components/error-page.tsx`) that renders a consistent error UI (status code, title, description, optional dev stack trace, back-to-home link). Works both from error boundaries and from regular route components.
 - Added a splat route (`route("*", "routes/not-found.tsx")`) that catches any navigation to an unregistered path and renders `ErrorPage` with a 404 state.
 - The redirect route (`s.$code.tsx`) now redirects to `/not-found` when a short code is not found in the database, routing through the splat route rather than throwing into the error boundary system.
-- The root `ErrorBoundary` in `root.tsx` remains as a safety net for unexpected server errors and unhandled exceptions.
+- The root `ErrorBoundary` in `root.tsx` is a safety net for unexpected server errors and unhandled exceptions. It used to duplicate `ErrorPage`'s layout logic inline; it now just renders `ErrorPage` with a 500 status, so there's one place that owns error styling instead of two.
 
 ### Architecture
 The original code had no separation of concerns — all logic lived in two route files with a module-level Map as storage. The refactor introduced clear layers:
@@ -48,6 +50,8 @@ The original code had no separation of concerns — all logic lived in two route
 
 **Removed dead code** — the original `shortenedUrls` Map export was still present in `libs/engine` after the persistence refactor. It was the root cause of the original bug and was deleted once confirmed unused.
 
+**Folder structure** — as the engine grew past a handful of files, `libs/engine/src` was reorganized into `services/` (pure logic: code generation, validation, retry helper), `repositories/` (the `UrlRepository` interface), and `tests/` (mirrors the other two, so it's obvious what's covered and what isn't).
+
 ### Design
 The original UI was intentionally broken — mismatched colors (lime/pink/cyan gradient), dashed purple borders, skewed buttons, and wavy decorations. The redesign replaced it with a clean, minimal interface.
 
@@ -59,12 +63,23 @@ The original UI was intentionally broken — mismatched colors (lime/pink/cyan g
 
 **Result feedback** — the shortened URL result card uses a green success style (icon + monospace link) that visually distinguishes it from the input form without jarring color shifts.
 
+### Robustness
+Two things stood out as missing once the happy path worked: nothing stopped a bad URL from being saved, and nothing stopped two different URLs from landing on the same short code.
+
+- **URL validation** — `validateUrl()` rejects empty input, unparseable strings, and anything that isn't `http`/`https` (so `javascript:...` can't be shortened). It runs in the action, backing up the browser's native `type="url"` check for anyone bypassing the client (curl, disabled JS).
+- **Collision handling** — `generateShortCode()` never checked anything before; two different URLs could land on the same code and the second write would crash with an unhandled DB error. `saveWithUniqueCode(url, generateCode)` now catches that specific unique-constraint violation and retries with a fresh code, using a small generic `withRetries()` helper (unit-tested on its own, no DB needed). Verified against a real SQLite database by forcing a collision on purpose.
+- **Docker fix** — `docker-compose up --build` was actually broken: `node:20-alpine` has no OpenSSL, so Prisma's schema engine couldn't start and `prisma migrate deploy` failed on every boot. Added `apk add openssl` to the Dockerfile. Confirmed the full flow — build, migrate, shorten, redirect — works in the actual container, not just in dev.
+
+### Polish
+- **Loading states** — the form uses React Router's `useNavigation()` to know when a submission is in flight, and disables itself with a spinner during that window. The spinner/disable logic lives inside the reusable `Button` component (`loading` / `loadingText` props) rather than being copy-pasted into every form that needs it.
+- **Theming bug** — every themed color in the app (`bg-[--primary]`, `text-[--foreground]`, etc.) was silently not rendering. Tailwind v4 compiled that bracket syntax to `background-color: --primary` — invalid CSS the browser just drops — instead of wrapping it in `var()`. Since `app.css` already declares these as `@theme` tokens, the fix was to use Tailwind's native utilities directly (`bg-primary`, `text-foreground`, ...), which is what the theme system is for. This was pre-existing, not something introduced during this pass — worth knowing about since it affected essentially every component.
+
 ## What I Would Do With More Time
 
 <!-- What would you tackle next if you had more time? -->
-- **URL validation** — reject non-URL strings at the action level with a helpful inline error message.
-- **Collision handling** — retry `generateShortCode()` if the generated code already exists in the database (currently a unique constraint violation would surface as a 500).
-- **Click statistics** — track a `clicks` counter per short URL and surface it in the listing view.
+- **Click statistics** — track a `clicks` counter per short URL and surface it in the listing view. This is the one named requirement I didn't get to.
+- **Abuse prevention** — basic rate limiting on the shorten action; right now nothing stops someone from hammering it.
+- **Broader test coverage** — `libs/engine` is well-tested, but `applications/web` has none: no tests for the routes, `PrismaUrlRepository`, or components.
 - **Dependency injection** — pass the repository through context rather than instantiating `PrismaUrlRepository` directly in each route.
 - **Storybook** — isolate and document UI components for independent development and visual testing.
 
@@ -81,4 +96,4 @@ Used Claude Code throughout. Key use cases:
 ## Feedback
 
 <!-- Any feedback on the challenge? Was it clear? Too easy/hard? Suggestions? -->
-The challenge is well-scoped: each bug has a distinct root cause and the fixes compose naturally into a production-quality app. The intentional chaos in the UI is a nice touch — it forces a design decision rather than just a cleanup. A suggested addition would be a brief rubric or scoring guide so candidates know which areas carry the most weight.
+The challenge is well-scoped: each bug has a distinct root cause and the fixes compose naturally into a production-quality app. The intentional chaos in the UI is a nice touch — it forces a design decision rather than just a cleanup.
