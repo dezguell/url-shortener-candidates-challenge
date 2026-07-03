@@ -1,5 +1,3 @@
-export const shortenedUrls: Map<string, string> = new Map();
-
 export function generateShortCode(): string {
   const chars =
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
