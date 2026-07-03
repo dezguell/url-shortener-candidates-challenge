@@ -54,7 +54,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 
   if (!actionData){
     return (
-      <main className="min-h-screen bg-[--background] flex flex-col items-center justify-center px-4 py-16">
+      <main className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-16">
         <div className="w-full max-w-lg flex flex-col gap-0">
           <ShortenForm baseUrl={baseUrl} />
           <UrlList urls={urls} />
@@ -64,7 +64,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
   }
 
   return (
-    <main className="min-h-screen bg-[--background] flex flex-col items-center justify-center px-4 py-16">
+    <main className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-16">
       <div className="w-full max-w-lg flex flex-col gap-0">
         <ShortenForm baseUrl={baseUrl} error={actionData.error} />
         <ShortenResult shortenedUrl={actionData.shortenedUrl} isDuplicate={actionData.isDuplicate} />

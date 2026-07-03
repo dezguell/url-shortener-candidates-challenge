@@ -33,16 +33,16 @@ export function ErrorPage({
   }
 
   return (
-    <main className="min-h-screen bg-[--background] flex items-center justify-center px-4">
+    <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <Card className="w-full max-w-sm text-center">
         <CardContent className="pt-8 pb-8 flex flex-col items-center gap-4">
-          <p className="text-7xl font-bold text-[--border] tabular-nums">{status}</p>
+          <p className="text-7xl font-bold text-border tabular-nums">{status}</p>
           <div>
-            <h1 className="text-xl font-semibold text-[--foreground] mb-1">{title}</h1>
-            <p className="text-sm text-[--muted-foreground]">{description}</p>
+            <h1 className="text-xl font-semibold text-foreground mb-1">{title}</h1>
+            <p className="text-sm text-muted-foreground">{description}</p>
           </div>
           {stack && (
-            <pre className="w-full text-left text-xs text-[--destructive] bg-[--destructive]/5 border border-[--destructive]/20 p-4 rounded-lg overflow-x-auto">
+            <pre className="w-full text-left text-xs text-destructive bg-destructive/5 border border-destructive/20 p-4 rounded-lg overflow-x-auto">
               {stack}
             </pre>
           )}
