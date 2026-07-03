@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateUrl } from "./url-validation";
+import { validateUrl } from "../../services/url-validation";
 
 describe("validateUrl", () => {
   it("accepts a valid http URL", () => {

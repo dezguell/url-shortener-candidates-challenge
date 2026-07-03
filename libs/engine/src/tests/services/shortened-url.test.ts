@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateShortCode } from "./shortened-url";
+import { generateShortCode } from "../../services/shortened-url";
 
 describe("generateShortCode", () => {
   it("should generate a code of at least 6 characters", () => {
