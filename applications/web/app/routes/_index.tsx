@@ -31,8 +31,12 @@ export async function action({ request }: Route.ActionArgs) {
     return { shortenedUrl: `${baseUrl}/s/${existing.code}`, isDuplicate: true };
   }
 
-  const shortCode = generateShortCode();
-  await repo.save(shortCode, url);
+  let shortCode: string;
+  try {
+    shortCode = await repo.saveWithUniqueCode(url, generateShortCode);
+  } catch {
+    return { error: "Could not generate a short code, please try again." };
+  }
 
   return { shortenedUrl: `${baseUrl}/s/${shortCode}`, isDuplicate: false };
 }

@@ -5,7 +5,11 @@ export interface ShortenedUrl {
 }
 
 export interface UrlRepository {
-  save(code: string, url: string): Promise<void>;
+  /**
+   * Persists `url` under a code from `generateCode`, retrying with a fresh
+   * code on collision. Resolves with the code that was actually stored.
+   */
+  saveWithUniqueCode(url: string, generateCode: () => string): Promise<string>;
   findByCode(code: string): Promise<string | null>;
   findByUrl(url: string): Promise<ShortenedUrl | null>;
   findAll(): Promise<ShortenedUrl[]>;
