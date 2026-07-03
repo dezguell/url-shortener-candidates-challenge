@@ -1,6 +1,6 @@
 import { useActionData } from "react-router";
 import type { Route } from "./+types/_index";
-import { baseUrl, generateShortCode } from "@url-shortener/engine";
+import { baseUrl, generateShortCode, validateUrl } from "@url-shortener/engine";
 import { PrismaUrlRepository } from "~/repositories/prisma-url-repository";
 import { ShortenForm } from "~/components/shorten-form";
 import { ShortenResult } from "~/components/shorten-result";
@@ -19,8 +19,9 @@ export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const url = formData.get("url") as string;
 
-  if (!url) {
-    return { error: "URL is required" };
+  const validationError = validateUrl(url);
+  if (validationError) {
+    return { error: validationError };
   }
 
   const repo = new PrismaUrlRepository();
@@ -47,11 +48,22 @@ export default function Index({ loaderData }: Route.ComponentProps) {
   const { baseUrl, urls } = loaderData;
   const actionData = useActionData<typeof action>();
 
+  if (!actionData){
+    return (
+      <main className="min-h-screen bg-[--background] flex flex-col items-center justify-center px-4 py-16">
+        <div className="w-full max-w-lg flex flex-col gap-0">
+          <ShortenForm baseUrl={baseUrl} />
+          <UrlList urls={urls} />
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[--background] flex flex-col items-center justify-center px-4 py-16">
       <div className="w-full max-w-lg flex flex-col gap-0">
-        <ShortenForm baseUrl={baseUrl} error={actionData?.error} />
-        <ShortenResult shortenedUrl={actionData?.shortenedUrl} isDuplicate={actionData?.isDuplicate} />
+        <ShortenForm baseUrl={baseUrl} error={actionData.error} />
+        <ShortenResult shortenedUrl={actionData.shortenedUrl} isDuplicate={actionData.isDuplicate} />
         <UrlList urls={urls} />
       </div>
     </main>
