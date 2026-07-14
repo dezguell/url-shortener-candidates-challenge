@@ -1,11 +1,11 @@
 import { redirect } from "react-router";
 import type { Route } from "./+types/s.$code";
-import { PrismaUrlRepository } from "~/repositories/prisma-url-repository";
+import { urlRepositoryContext } from "~/server/url-repository.server";
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, context }: Route.LoaderArgs) {
   const { code } = params;
 
-  const repo = new PrismaUrlRepository();
+  const repo = context.get(urlRepositoryContext);
   const url = await repo.findByCode(code);
 
   if (!url) {

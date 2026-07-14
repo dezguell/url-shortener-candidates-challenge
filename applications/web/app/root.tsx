@@ -1,8 +1,11 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, type MiddlewareFunction } from "react-router";
 
 import type { Route } from "./+types/root";
 import { ErrorPage } from "~/components/error-page";
+import { urlRepositoryMiddleware } from "~/server/url-repository.server";
 import "./app.css";
+
+export const middleware: MiddlewareFunction[] = [urlRepositoryMiddleware];
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },

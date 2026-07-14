@@ -79,9 +79,19 @@ Two things stood out as missing once the happy path worked: nothing stopped a ba
 <!-- What would you tackle next if you had more time? -->
 - **Click statistics** — track a `clicks` counter per short URL and surface it in the listing view. This is the one named requirement I didn't get to.
 - **Abuse prevention** — basic rate limiting on the shorten action; right now nothing stops someone from hammering it.
-- **Broader test coverage** — `libs/engine` is well-tested, but `applications/web` has none: no tests for the routes, `PrismaUrlRepository`, or components.
-- **Dependency injection** — pass the repository through context rather than instantiating `PrismaUrlRepository` directly in each route.
+- **Broader test coverage** — one route now has coverage (see "Post-feedback update" below), but `PrismaUrlRepository` and the components still don't.
 - **Storybook** — isolate and document UI components for independent development and visual testing.
+
+## Post-feedback update
+
+<!-- Kabilio's review flagged that the persistence layer lived inside the web app and that routes instantiated PrismaUrlRepository directly, so the UrlRepository interface wasn't actually enforcing a dependency boundary. This addresses that. -->
+Kabilio's engineering review (2026-07-08) flagged one thing above everything else: the persistence layer (Prisma + the repository) lived inside `applications/web` instead of an isolated infrastructure package, and routes called `new PrismaUrlRepository()` directly — so the `UrlRepository` interface existed but nothing enforced it, and swapping the implementation (for tests or otherwise) meant touching every route. Fixed both:
+
+- **New `libs/infrastructure` package** (`@url-shortener/infrastructure`) — owns the Prisma schema, migrations, client singleton, and `PrismaUrlRepository`. It depends on `libs/engine` (to implement `UrlRepository`); nothing depends on it except the composition root below. Dependency direction is now domain ← infrastructure ← delivery, not delivery → infrastructure.
+- **Composition root via React Router's context/middleware** (`applications/web/app/server/url-repository.server.ts`, future flag `v8_middleware` in `react-router.config.ts`) — this is the *only* file in the web app that imports `@url-shortener/infrastructure` or instantiates `PrismaUrlRepository`. A root-level middleware puts it into request context; `loader`/`action` in both routes now read it via `context.get(urlRepositoryContext)` and are typed against `UrlRepository` only.
+- **Proof it's substitutable** — `applications/web/app/routes/_index.test.ts` swaps in a fake in-memory `UrlRepository` via the same context mechanism, with no Prisma/DB involved, exactly the scenario the review said wasn't possible.
+
+Dockerfile and docker-compose were updated to build/migrate against the new package location; `pnpm build`, `pnpm typecheck`, `pnpm test`, and a manual end-to-end run (shorten → list → redirect) all pass after the move.
 
 ## AI Usage
 

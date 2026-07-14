@@ -1,13 +1,13 @@
 import { useActionData } from "react-router";
 import type { Route } from "./+types/_index";
 import { baseUrl, generateShortCode, validateUrl } from "@url-shortener/engine";
-import { PrismaUrlRepository } from "~/repositories/prisma-url-repository";
+import { urlRepositoryContext } from "~/server/url-repository.server";
 import { ShortenForm } from "~/components/shorten-form";
 import { ShortenResult } from "~/components/shorten-result";
 import { UrlList } from "~/components/url-list";
 
-export async function loader() {
-  const repo = new PrismaUrlRepository();
+export async function loader({ context }: Route.LoaderArgs) {
+  const repo = context.get(urlRepositoryContext);
   const urls = await repo.findAll();
   return {
     baseUrl: baseUrl ? baseUrl + "/s/" : "-",
@@ -15,7 +15,7 @@ export async function loader() {
   };
 }
 
-export async function action({ request }: Route.ActionArgs) {
+export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
   const url = formData.get("url") as string;
 
@@ -24,7 +24,7 @@ export async function action({ request }: Route.ActionArgs) {
     return { error: validationError };
   }
 
-  const repo = new PrismaUrlRepository();
+  const repo = context.get(urlRepositoryContext);
 
   const existing = await repo.findByUrl(url);
   if (existing) {

@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import type { ShortenedUrl, UrlRepository } from "@url-shortener/engine";
 import { withRetries } from "@url-shortener/engine";
-import { db } from "~/db.server";
+import { db } from "./prisma-client";
 
 function isUniqueCodeViolation(error: any): boolean {
   return (

@@ -7,10 +7,10 @@ export default defineConfig({
   envDir: "../..",
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
   ssr: {
-    noExternal: ["@url-shortener/engine"],
+    noExternal: ["@url-shortener/engine", "@url-shortener/infrastructure"],
     external: ["@prisma/client"],
   },
   optimizeDeps: {
-    include: ["@url-shortener/engine"],
+    include: ["@url-shortener/engine", "@url-shortener/infrastructure"],
   },
 });
